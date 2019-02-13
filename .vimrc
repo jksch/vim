@@ -12,27 +12,27 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'Shougo/neocomplete.vim'
 Plug 'mbbill/undotree'
 Plug 'Townk/vim-autoclose'
-Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh' }
+Plug 'AndrewRadev/splitjoin.vim'
 call plug#end()
 
-set shell=/bin/bash
+" begin vim c support
+let g:C_UseTool_cmake    = 'yes'
+let g:C_UseTool_doxygen  = 'yes'
+" end vim c support
 
 let mapleader=","		" Set leader key
 set encoding=utf-8		" Set encoding
 set autowrite			" Write on build etc.
 set number			" Set line numbers
 set relativenumber		" Set relative line number
-set clipboard=unnamedplus	" Use sys clipboard
+set clipboard=unnamed		" Use sys clipboard
 set spell			" Check spell
-set showcmd			" Shows what typed caracters
-set ignorecase                  " Search case insensitive...
-set smartcase 			" ... but not it begins with upper case
-set lazyredraw 			" Wait to redraw
 
 " use go imports
 let g:go_fmt_command = "goimports"
 
 " go error list shortcuts
+filetype plugin on
 map <C-n> :cn<CR>
 map <C-m> :cp<CR>
 nnoremap <leader>a :cclose<CR>
@@ -44,18 +44,20 @@ autocmd FileType go nmap <leader>tt  <Plug>(go-test-func)
 autocmd FileType go nmap <leader>c  <Plug>(go-coverage-toggle)
 autocmd FileType go nmap <leader>cb  <Plug>(go-coverage-browser)
 autocmd FileType go nmap <Leader>n <Plug>(go-rename)
-autocmd FileType go nmap <leader>l  <Plug>(go-metalinter)
+autocmd FileType go nmap <Leader>gd <Plug>(go-doc)
+autocmd FileType go nmap <Leader>gb <Plug>(go-doc-browser)
 autocmd FileType go nmap <leader>d  <Plug>(go-def)
 autocmd FileType go nmap <leader>i  <Plug>(go-describe)
+"autocmd FileType go nmap <leader>j  <Plug>(go-decls)
 
 " run :GoBuild or :GoTestCompile based on the go file
 function! s:build_go_files()
-	let l:file = expand('%')
-	if l:file =~# '^\f\+_test\.go$'
-		call go#cmd#Test(0, 1)
-	elseif l:file =~# '^\f\+\.go$'
-		call go#cmd#Build(0)
-	endif
+  let l:file = expand('%')
+  if l:file =~# '^\f\+_test\.go$'
+    call go#test#Test(0, 1)
+  elseif l:file =~# '^\f\+\.go$'
+    call go#cmd#Build(0)
+  endif
 endfunction
 
 autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
@@ -65,10 +67,10 @@ let g:go_highlight_types = 1
 let g:go_highlight_fields = 1
 let g:go_highlight_functions = 1
 let g:go_highlight_methods = 1
-let g:go_highlight_operators = 0
-let g:go_highlight_extra_types = 0
+let g:go_highlight_operators = 1
+let g:go_highlight_extra_types = 1
 let g:go_highlight_build_constraints = 1
-let g:go_highlight_generate_tags = 0
+let g:go_highlight_generate_tags = 1
 let g:go_auto_sameids = 1
 let g:go_highlight_trailing_whitespace_error= 1
 
@@ -110,7 +112,7 @@ let g:airline#extensions#whitespace#enabled = 0
 let g:nerdtree_tabs_smart_startup_focus = 2
 let g:nerdtree_tabs_open_on_console_startup = 0
 let g:nerdtree_tabs_focus_on_files = 1
-nnoremap <leader>nt :NERDTreeToggle<CR>
+nnoremap <leader>n :NERDTreeToggle<CR>
 
 " Powerline
 set laststatus=2
@@ -121,11 +123,14 @@ let g:neocomplete#enable_at_startup = 1
 let g:neocomplete#enable_smart_case = 1
 let g:neocomplete#sources#syntax#min_keyword_length = 3
 let g:neocomplete#enable_auto_select = 0
-let g:neocomplete#enable_fuzzy_completion = 1
-"inoremap <expr><Space> pumvisible() ? "\<C-y>" : "\<Space>"
+inoremap <expr><Space> pumvisible() ?  neocomplete#close_popup() : "\<Space>"
 
 " Undo tree
 nnoremap <F5> :UndotreeToggle<cr>
 if !exists('g:undotree_SetFocusWhenToggle')
 	let g:undotree_SetFocusWhenToggle = 1
 endif
+
+"Syntastic
+let g:syntastic_go_checkers = ['golint', 'govet', 'errcheck']
+let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
